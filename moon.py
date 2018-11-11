@@ -17,6 +17,63 @@ from math import sqrt
 import matplotlib.pyplot as plt
 import math
 from termcolor import colored
+import random
+
+
+def partitionfunc(n, k, l = 1):
+    if k < 1:
+        raise StopIteration
+    if k == 1:
+        if n >= l:
+            yield (n,)
+        raise StopIteration
+    for i in range(l,n+1):
+        for result in partitionfunc(n-i,k-1,i):
+            yield (i,)+result
+
+def iter_sample_fast(iterable, samplesize):
+    results = []
+    for i, v in enumerate(iterable):
+        r = random.randint(0, i)
+        if r < samplesize:
+            if i < samplesize:
+                results.insert(r, v) # add first samplesize items in random order
+            else:
+                results[r] = v # at a decreasing rate, replace random items
+
+    if len(results) < samplesize:
+        raise ValueError("Sample larger than population.")
+ 
+    return results
+
+def bubble_leanings(size, proportion, number_bubbles):
+
+    side_1 = size[0]
+    side_2 = size[1]
+    total_blue = int(math.floor(side_1 * side_2 * proportion))
+
+    city_sizes = iter_sample_fast(partitionfunc(total_blue, number_bubbles), 1)[0]
+
+    biggest_bubble = max(city_sizes)
+
+    leaning_matrix = np.zeros([side_1, side_2]).flatten() # zero = red
+
+    positions = np.random.choice(side_1*side_2 - biggest_bubble, number_bubbles) 
+
+    # one = blue
+    for i in range(number_bubbles):
+        size = city_sizes[i]
+        start = positions[i]
+
+        for j in range(size):
+            leaning_matrix[start + j] = 1
+
+    leaning_matrix = np.reshape(leaning_matrix[:side_1*side_2], (side_1, side_2))
+    leaning_matrix[1::2, :] = leaning_matrix[1::2, ::-1]
+
+    return leaning_matrix.astype(int)
+
+
 
 
 def get_political_leanings(size, num_classes=2):
@@ -49,8 +106,8 @@ def delta_dvec(polarities, polarity):
     running_sum = 0
     for p in polarities:
         running_sum += abs(p - polarity) ** 2
-    running_sum /= len(polarities)
-    return sqrt(running_sum)
+    running_sum = sqrt(running_sum)
+    return running_sum/len(polarities)
 
 def get_vote(district_votes):
     return [areas[0] > areas[1] for areas in district_votes]
@@ -119,7 +176,7 @@ def print_partition(partition, leanings, size):
 if __name__ == '__main__':
     
     size = (10,10)
-    districts = 4
+    districts = 9
  
     # grid = Grid(size, assignment = )
     
@@ -130,9 +187,11 @@ if __name__ == '__main__':
     nonflipped_value_sum = 0
     nonflipped_values = []
     lowest_min = .99
+    highest_max = 0
 
-    for i in range(36):
-        leanings_grid = get_political_leanings(size)
+    for i in range(1):
+        # leanings_grid = get_political_leanings(size)
+        leanings_grid = bubble_leanings(size, 0.45, 1)
         polarity = get_polarity(leanings_grid)
 
         # print(district_assignment(size, districts))
@@ -145,7 +204,7 @@ if __name__ == '__main__':
         is_valid=Validator([new_constraint]),
         accept=always_accept,
         initial_state=grid,
-        total_steps=1000005
+        total_steps=100005
         )
 
         
@@ -172,11 +231,20 @@ if __name__ == '__main__':
                         print("Polarity: {}".format(polarity))
                         # Get winners:
                         print("Votes: {}".format(votes))
-                        print(leanings_grid)
+                        print(district_votes)
                 else:
                     nonflipped_count += 1
                     nonflipped_value_sum += value
                     nonflipped_values.append(value)
+                    if (value > highest_max):
+                        highest_max = value
+                        print("-----\nNew highest non-flipped value:")
+                        print(value)
+                        print_partition(partition, leanings_grid, size)
+                        print("Polarity: {}".format(polarity))
+                        # Get winners:
+                        print("Votes: {}".format(votes))
+                        print(district_votes)
                     # print("Vote flipped!")
                     # print("Delta D_vec: {}".format(delta_dvec(polarities, polarity)))
                     # print("Delta D: {}".format(delta_d(votes, polarity)))
@@ -184,7 +252,7 @@ if __name__ == '__main__':
             if (idx % 100000) == 0 and idx > 0:
                 print("-----------")
                 # print("Number samples: {}".format(idx/1000))
-                # print("Iteration: {}".format(i))
+                print("Iteration: {}".format(i))
                 print("Number flipped elections: {}".format(flipped_count))
                 if flipped_count != 0:
                     print("Flipped avg: {}".format(flipped_value_sum/flipped_count))
@@ -195,12 +263,16 @@ if __name__ == '__main__':
         # print(lowest_min)
     # Print boxplot:
     box = plt.boxplot([flipped_values, nonflipped_values], showmeans=True, whis=99)
-    plt.setp(box['boxes'][0], color='green')
-    plt.setp(box['caps'][0], color='green')
-    plt.setp(box['whiskers'][0], color='green')
+    plt.setp(box['boxes'][0], color='red')
+    plt.setp(box['caps'][0], color='red')
+    plt.setp(box['whiskers'][0], color='red')
+    plt.setp(box['caps'][1], color='red')
+    plt.setp(box['whiskers'][1], color='red')
     plt.setp(box['boxes'][1], color='blue')
-    plt.setp(box['caps'][1], color='blue')
-    plt.setp(box['whiskers'][1], color='blue')
+    plt.setp(box['caps'][2], color='blue')
+    plt.setp(box['whiskers'][2], color='blue')
+    plt.setp(box['caps'][3], color='blue')
+    plt.setp(box['whiskers'][3], color='blue')
     plt.ylim([0, 0.3]) # y axis gets more space at the extremes
     plt.grid(True, axis='y') # let's add a grid on y-axis
     plt.title('Metric values and election flipping', fontsize=18) # chart title
