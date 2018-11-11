@@ -189,9 +189,9 @@ if __name__ == '__main__':
     lowest_min = .99
     highest_max = 0
 
-    for i in range(1):
+    for i in range(10):
         # leanings_grid = get_political_leanings(size)
-        leanings_grid = bubble_leanings(size, 0.45, 1)
+        leanings_grid = bubble_leanings(size, 0.45, 15)
         polarity = get_polarity(leanings_grid)
 
         # print(district_assignment(size, districts))
@@ -273,11 +273,11 @@ if __name__ == '__main__':
     plt.setp(box['whiskers'][2], color='blue')
     plt.setp(box['caps'][3], color='blue')
     plt.setp(box['whiskers'][3], color='blue')
-    plt.ylim([0, 0.3]) # y axis gets more space at the extremes
+    plt.ylim([0, 0.15]) # y axis gets more space at the extremes
     plt.grid(True, axis='y') # let's add a grid on y-axis
-    plt.title('Metric values and election flipping', fontsize=18) # chart title
+    plt.title('c=5; d = 9') # chart title
     plt.ylabel('') # y axis title
-    plt.xticks([1,2,3], ['Flipped','Nonflipped'])
+    plt.xticks([1,2], ['Flipped Vote','Popular Vote'])
     plt.show()
 
 
