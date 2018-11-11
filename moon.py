@@ -83,13 +83,13 @@ if __name__ == '__main__':
     nonflipped_value_sum = 0
     nonflipped_values = []
     lowest_min = .99
-    for i in range(12):
+    for i in range(36):
         leanings_grid = get_political_leanings(size)
         polarity = get_polarity(leanings_grid)
 
         grid = Grid(size)
-        print("Results\n--------")
-        print(grid)
+        # print("Results\n--------")
+        # print(grid)
 
         chain = MarkovChain(
         proposal=propose_random_flip,
@@ -125,7 +125,8 @@ if __name__ == '__main__':
                     # print("\n")
             if (idx % 100000) == 0 and idx > 0:
                 print("-----------")
-                print("Number samples: {}".format(idx/1000))
+                # print("Number samples: {}".format(idx/1000))
+                print("Iteration: {}".format(i))
                 print("Number flipped elections: {}".format(flipped_count))
                 if flipped_count != 0:
                     print("Flipped avg: {}".format(flipped_value_sum/flipped_count))
