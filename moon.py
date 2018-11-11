@@ -69,13 +69,49 @@ def flipped_vote(votes, polarity):
     else:
         return False
 
+def district_assignment(size, districts):
 
+    side_1 = size[0]
+    side_2 = size[1]
+
+    population = side_1 * side_2
+    district_size = math.floor(population/districts)
+
+    assignment_matrix = np.zeros([side_1, side_2]).flatten()
+    bonus = 1
+
+    for i in range(population):
+        assignment = math.floor(i/district_size) + 1 
+
+        if assignment > districts:
+
+            assignment_matrix = np.insert(assignment_matrix, (bonus)*(district_size + 1) - 1, bonus)
+            bonus = (bonus + 1) % districts
+
+        else:
+            assignment_matrix[i] = assignment
+
+    assignment_matrix = np.reshape(assignment_matrix[:side_1*side_2], (side_1, side_2))
+    assignment_matrix[1::2, :] = assignment_matrix[1::2, ::-1]
+
+    assignment_dict = dict()
+
+    for i in range(side_1):
+        for j in range(side_2):
+            assignment_dict[(i, j)] = int(assignment_matrix[(i, j)])
+
+    return assignment_dict
 
 leanings_grid = get_political_leanings((10,10))
 # print(get_polarity(grid))
 
 if __name__ == '__main__':
+    
     size = (10,10)
+    districts = 7
+ 
+    # grid = Grid(size, assignment = district_assignment(size, districts))
+    
     flipped_count = 0
     flipped_value_sum = 0
     flipped_values = []
